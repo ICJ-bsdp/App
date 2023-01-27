@@ -14,19 +14,25 @@ class Cliente:
             s.sendall(f"[Nueva Persona!!!] {self.name} se ha conectado ~ Bienvinidos!".encode())
 
             threading.Thread(target=self.recibo_thread, args=(s,)).start()
+            self.send_thread(s)
 
-            while True:
-                toSend = input(f"{name} >>> ")
-                s.sendall(f"{self.name} | {str(datetime.datetime.now()).split('.')[0]} | {toSend}".encode())
-                print("client: sent")
+            print("client closed")
 
     def recibo_thread(self, s):
         while True:
             data = s.recv(1024)
+
             if not data:
                 continue
+
             print("client: get")
             print(f"{data.decode()}")
+
+    def send_thread(self, s):
+        while True:
+            toSend = input(f"{self.name} >>> ")
+            s.sendall(f"{self.name} | {str(datetime.datetime.now()).split('.')[0]} | {toSend}".encode())
+            print("client: sent")
 
 if __name__ == "__main__":
     Cliente()

@@ -18,26 +18,27 @@ class Servidor():
         self.el_clube_de_burros = []
 
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             s.bind((HOST, PORT))
-            s.listen()
+            s.listen(100)
 
             #espera a que se conecte un cliente
-            while True:
-                connection = s.accept()
+            self.recieve_thread(s)
 
-                self.el_clube_de_burros.append(connection)
-                print(self.el_clube_de_burros)
+    def recieve_thread(self, s):
+        while True:
+            connection = s.accept()
 
-                print(f"server event loop")
+            self.el_clube_de_burros.append(connection)
+            # print(self.el_clube_de_burros)
 
-                self.recibo()
+            print(f"server event loop")
+
+            self.recibo()
 
     def recibo(self):
         for conn, addr in self.el_clube_de_burros:
             data = conn.recv(1024)
-
-            if not data:
-                continue
 
             print("server: get")
             self.enviar(data)
