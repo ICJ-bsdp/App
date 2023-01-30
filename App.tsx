@@ -6,9 +6,12 @@
  * @format
  */
 
-import React from 'react';
+import { BleManager, Device } from 'react-native-ble-plx';
+
+import React, { useEffect, useState } from 'react';
 import {
   Image,
+  Pressable,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -18,17 +21,50 @@ import {
   View,
 } from 'react-native';
 
-function Pill({text}): JSX.Element {
+function Pill({text, onClick}): JSX.Element {
   return (
-    <View style={styles.deviceNamesContainer}>
+    <Pressable style={styles.deviceNamesContainer} onClick={onClick}>
       <Text style={styles.deviceNamesText}>{text}</Text>
       <Image style={styles.deviceNamesIcon} source={require("./assets/images/continue.png")} />
-    </View>
+    </Pressable>
   );
 }
 
 function App(): JSX.Element {
 
+  const manager = new BleManager();
+
+  const [devices, setDevices] = useState<Device[]>([]);
+
+  const [selected, setSelected] = useState<Device | null>(null);
+
+  console.log(devices)
+
+  const scanAndConnect = () => {
+    manager.startDeviceScan(null, null, (error, device) => {
+      if (error) {
+        return;
+      }
+
+      //add device if not exists
+      if (!devices.some((d: { id: string; }) => d.id === device.id)) {
+        setDevices([...devices, device]);
+      }
+    });
+  }
+
+  useEffect(() => {
+    const sub = manager.onStateChange((state) => {
+      if (state === 'PoweredOn') {
+        scanAndConnect();
+        sub.remove();
+      }
+    }, true);
+  
+    return () => {
+      sub.remove();
+    }
+  }, []);
   
 
   return (
@@ -39,7 +75,13 @@ function App(): JSX.Element {
         justifyContent: 'center',
         alignItems: 'center'
       }} >
-        <Pill text="Samsung iPhone Pro Galaxy S20 Plus Ultra (UUID)" />
+        {
+          devices.map((device: Device) => {
+            return <Pill text={device.name + "(" + device.id + ")"} onClick={() => {
+              setSelected(device);
+            }}/>
+          })
+        }
       </ScrollView>
     </SafeAreaView>
   );
