@@ -1,6 +1,13 @@
 import { Image, StyleSheet, Text, View } from 'react-native';
 
 export default function Connect({setConnected}) {
+
+  const [devices, setDevices] = useState([]);
+
+  useState(() => {
+    
+  }, []);
+
   return (
     <View style={styles.container}>
         <Image style={styles.backgroundImage} source={require('../assets/images/backg.png')} />
