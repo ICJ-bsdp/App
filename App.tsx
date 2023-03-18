@@ -17,13 +17,14 @@ import {
   StatusBar,
   StyleSheet,
   Text,
+  TextInput,
   useColorScheme,
   View,
 } from 'react-native';
 
-function Pill({text, onClick}): JSX.Element {
+function Pill({text, onPress}): JSX.Element {
   return (
-    <Pressable style={styles.deviceNamesContainer} onClick={onClick}>
+    <Pressable style={styles.deviceNamesContainer} onPress={onPress}>
       <Text style={styles.deviceNamesText}>{text}</Text>
       <Image style={styles.deviceNamesIcon} source={require("./assets/images/continue.png")} />
     </Pressable>
@@ -43,12 +44,17 @@ function App(): JSX.Element {
   const scanAndConnect = () => {
     manager.startDeviceScan(null, null, (error, device) => {
       if (error) {
+        console.log(error)
         return;
       }
 
-      //add device if not exists
-      if (!devices.some((d: { id: string; }) => d.id === device.id)) {
-        setDevices([...devices, device]);
+      if (device?.name?.includes("BSDP")) {
+        setDevices((devices) => {
+          if (devices.find((d) => d.id === device.id)) {
+            return devices;
+          }
+          return [...devices, device];
+        });
       }
     });
   }
@@ -56,6 +62,7 @@ function App(): JSX.Element {
   useEffect(() => {
     const sub = manager.onStateChange((state) => {
       if (state === 'PoweredOn') {
+        console.log("scanning")
         scanAndConnect();
         sub.remove();
       }
@@ -69,7 +76,7 @@ function App(): JSX.Element {
 
   return (
     <SafeAreaView style={styles.backgroundStyle}>
-      <Text style={styles.header}>Connect</Text>
+      {!selected && <><Text style={styles.header}>Connect</Text>
       <Text style={styles.subHeader}>Select a device from those listed by Bluetooth below</Text>
       <ScrollView style={styles.selectMenu}contentContainerStyle={{
         justifyContent: 'center',
@@ -77,12 +84,36 @@ function App(): JSX.Element {
       }} >
         {
           devices.map((device: Device) => {
-            return <Pill text={device.name + "(" + device.id + ")"} onClick={() => {
+            return <Pill text={device.name + "(" + device.id + ")"} onPress={() => {
+              manager.stopDeviceScan();
               setSelected(device);
             }}/>
           })
         }
-      </ScrollView>
+      </ScrollView></>}
+      {selected && <>
+      <Text style={styles.header}>Connected</Text>
+      <Text style={styles.subHeader}>{selected.name} {"(" + selected.id + ")"}</Text>
+      <TextInput style={{width: "75%", borderRadius: 15, color: "black", margin: 15, height: "50%", backgroundColor: "#f2f2f2"}} onSubmitEditing={(e) => {
+        const text = e.nativeEvent.text;
+        const Buffer = require("buffer").Buffer;
+        let encoded = new Buffer(text).toString("base64");
+
+        selected.isConnected().then((connected) => {
+          if (!connected) {
+            return selected.connect();
+          }
+          return selected;
+        }).then((device) => {
+          return device.discoverAllServicesAndCharacteristics();
+        }).then((device) => {
+          device.writeCharacteristicWithResponseForService("4fafc201-1fb5-459e-8fcc-c5c9c331914b", "beb5483e-36e1-4688-b7f5-ea07361b26a8", encoded);
+        }).catch((e) => {
+          console.log(e);
+        }
+        );
+      }}/>
+      </>}
     </SafeAreaView>
   );
 }
