@@ -39,7 +39,28 @@ function App(): JSX.Element {
 
   const [selected, setSelected] = useState<Device | null>(null);
 
+  const [typed, setTyped] = useState<string>("");
+
   console.log(devices)
+
+  const submit = () => {
+    const Buffer = require("buffer").Buffer;
+    let encoded = new Buffer(typed).toString("base64");
+
+    selected.isConnected().then((connected) => {
+      if (!connected) {
+        return selected.connect();
+      }
+      return selected;
+    }).then((device) => {
+      return device.discoverAllServicesAndCharacteristics();
+    }).then((device) => {
+      device.writeCharacteristicWithResponseForService("4fafc201-1fb5-459e-8fcc-c5c9c331914b", "beb5483e-36e1-4688-b7f5-ea07361b26a8", encoded);
+    }).catch((e) => {
+      console.log(e);
+    }
+    );
+  }
 
   const scanAndConnect = () => {
     manager.startDeviceScan(null, null, (error, device) => {
@@ -94,25 +115,18 @@ function App(): JSX.Element {
       {selected && <>
       <Text style={styles.header}>Connected</Text>
       <Text style={styles.subHeader}>{selected.name} {"(" + selected.id + ")"}</Text>
-      <TextInput style={{width: "75%", borderRadius: 15, color: "black", margin: 15, height: "50%", backgroundColor: "#f2f2f2"}} onSubmitEditing={(e) => {
-        const text = e.nativeEvent.text;
-        const Buffer = require("buffer").Buffer;
-        let encoded = new Buffer(text).toString("base64");
-
-        selected.isConnected().then((connected) => {
-          if (!connected) {
-            return selected.connect();
-          }
-          return selected;
-        }).then((device) => {
-          return device.discoverAllServicesAndCharacteristics();
-        }).then((device) => {
-          device.writeCharacteristicWithResponseForService("4fafc201-1fb5-459e-8fcc-c5c9c331914b", "beb5483e-36e1-4688-b7f5-ea07361b26a8", encoded);
-        }).catch((e) => {
-          console.log(e);
-        }
-        );
+      <TextInput style={{width: "75%", borderRadius: 15, color: "black", margin: 15, height: "50%", backgroundColor: "#f2f2f2"}} 
+      onChangeText={(text) => {
+        setTyped(text);
+      }}
+      onSubmitEditing={() => {
+        submit();
       }}/>
+      <Pressable style={{backgroundColor: "#202020", borderRadius: 15}} onPress={() => {
+        submit();
+      }}>
+        <Text>Submit</Text>
+      </Pressable>
       </>}
     </SafeAreaView>
   );
