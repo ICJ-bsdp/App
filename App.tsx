@@ -43,9 +43,9 @@ function App(): JSX.Element {
 
   console.log(devices)
 
-  const submit = () => {
+  const submit = (text) => {
     const Buffer = require("buffer").Buffer;
-    let encoded = new Buffer(typed).toString("base64");
+    let encoded = new Buffer(text).toString("base64");
 
     selected.isConnected().then((connected) => {
       if (!connected) {
@@ -81,18 +81,19 @@ function App(): JSX.Element {
   }
 
   useEffect(() => {
-    const sub = manager.onStateChange((state) => {
-      if (state === 'PoweredOn') {
-        console.log("scanning")
-        scanAndConnect();
-        sub.remove();
-      }
-    }, true);
-  
-    return () => {
-      sub.remove();
+    if (selected) {
+      submit("Connected!");
     }
-  }, []);
+    else {
+      const sub = manager.onStateChange((state) => {
+        if (state === 'PoweredOn') {
+          console.log("scanning")
+          scanAndConnect();
+          sub.remove();
+        }
+      }, true);
+    }
+  }, [selected]);
   
 
   return (
@@ -105,7 +106,7 @@ function App(): JSX.Element {
       }} >
         {
           devices.map((device: Device) => {
-            return <Pill text={device.name + "(" + device.id + ")"} onPress={() => {
+            return <Pill key={device.id} text={device.name + "(" + device.id + ")"} onPress={() => {
               manager.stopDeviceScan();
               setSelected(device);
             }}/>
@@ -118,14 +119,24 @@ function App(): JSX.Element {
       <TextInput style={{width: "75%", borderRadius: 15, color: "black", margin: 15, height: "50%", backgroundColor: "#f2f2f2"}} 
       onChangeText={(text) => {
         setTyped(text);
-      }}
-      onSubmitEditing={() => {
-        submit();
       }}/>
-      <Pressable style={{backgroundColor: "#202020", borderRadius: 15}} onPress={() => {
-        submit();
+      <Pressable style={{backgroundColor: "#202020", borderRadius: 15, padding: 15}} onPress={() => {
+        submit(typed);
       }}>
-        <Text>Submit</Text>
+        <Text style={{color: "#fff"}}>Send</Text>
+      </Pressable>
+      <Pressable style={{backgroundColor: "#eaea", borderRadius: 15, padding: 15, marginTop: 15}} onPress={() => {
+        selected.isConnected().then((connected) => {
+          if (connected) {
+            selected.cancelConnection();
+          }
+          setSelected(null);
+          setTyped("");
+        }).catch((e) => {
+          console.log(e);
+        });
+      }}>
+        <Text style={{color: "#fff"}}>DC like robotics</Text>
       </Pressable>
       </>}
     </SafeAreaView>
