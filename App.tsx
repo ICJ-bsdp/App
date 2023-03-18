@@ -33,7 +33,7 @@ function Pill({text, onPress}): JSX.Element {
 
 function App(): JSX.Element {
 
-  const manager = new BleManager();
+  let manager = new BleManager();
 
   const [devices, setDevices] = useState<Device[]>([]);
 
@@ -125,10 +125,12 @@ function App(): JSX.Element {
       }}>
         <Text style={{color: "#fff"}}>Send</Text>
       </Pressable>
-      <Pressable style={{backgroundColor: "#eaea", borderRadius: 15, padding: 15, marginTop: 15}} onPress={() => {
+      <Pressable style={{backgroundColor: "rgb(255, 0, 0)", borderRadius: 15, padding: 15, marginTop: 15}} onPress={() => {
         selected.isConnected().then((connected) => {
           if (connected) {
             selected.cancelConnection();
+            manager.destroy();
+            manager = new BleManager();
           }
           setSelected(null);
           setTyped("");
@@ -136,7 +138,7 @@ function App(): JSX.Element {
           console.log(e);
         });
       }}>
-        <Text style={{color: "#fff"}}>DC like robotics</Text>
+        <Text style={{color: "#000"}}>DC like robotics</Text>
       </Pressable>
       </>}
     </SafeAreaView>
