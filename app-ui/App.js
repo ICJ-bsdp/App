@@ -14,9 +14,9 @@ export default function App() {
   return (
     <View style={sharedStyles.container}>
       {page == "Introduction" && <Introduction setPage={setPage} />}
-      {page == "Pair Found" && <PairFound />}
-      {page == "Pair Manually" && <PairManually />}
-      {page == "Connected" && <Connected />}
+      {page == "Pair Found" && <PairFound setPage={setPage} />}
+      {page == "Pair Manually" && <PairManually setPage={setPage} />}
+      {page == "Connected" && <Connected setPage={setPage} />}
     </View>
   );
 }
