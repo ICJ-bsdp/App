@@ -32,7 +32,6 @@ export default function PairFound({setPage}) {
           <Text style={Styling.heading}>Pairing Manually</Text>
           <Text style={Styling.text}>Select your SLATE from the list below</Text>
           <CustomButtonSecondary
-            style={{alignSelf: "left"}} 
             text={"Pair Automatically Instead"}
             onPress={() => {
                 setPage("Introduction")
