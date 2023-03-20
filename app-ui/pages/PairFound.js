@@ -32,6 +32,7 @@ export default function PairFound({setPage, bluetoothID}) {
                 onPress={() => {
                     setPage("Pair Manually")
                 }}
+                textStyle={{color: "#FF5A5A"}}
             />
         </View>
     </View>

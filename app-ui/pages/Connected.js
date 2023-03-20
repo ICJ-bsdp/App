@@ -4,7 +4,7 @@ import { useState } from "react";
 import CustomButton from "../components/CustomButton";
 import CustomButtonSecondary from "../components/CustomButtonSecondary";
 
-export default function Connected() {
+export default function Connected({setPage}) {
 
   const [name, setName] = useState("Unknown Bluetooth Device");
   const [batteryPercentage, setBatteryPercentage] = useState("Unknown");
@@ -21,18 +21,16 @@ export default function Connected() {
 
         <View style={Styling.bottom}>
             <CustomButton 
-                text={"Pair"} 
-                icon={require("../assets/Images/General/Bluetooth.png")} 
-                onPress={() => {
-                    setPage("Connected")
-                }}
+                text={"Connected"} 
+                style={{backgroundColor: "#121212"}}
+                textStyle={{color: "white"}}
             />
             <CustomButtonSecondary 
-                text={"Not My Device"}
+                text={"Remove"}
                 onPress={() => {
                     setPage("Pair Manually")
                 }}
-                style={{color: "red"}}
+                textStyle={{color: "#FF5A5A"}}
             />
         </View>
       </View>

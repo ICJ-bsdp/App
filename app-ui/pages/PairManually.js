@@ -2,6 +2,7 @@ import { Image, ScrollView, Text, View } from "react-native";
 import Styling from "../components/Styling";
 import CustomButton from "../components/CustomButton";
 import { useState } from "react";
+import CustomButtonSecondary from "../components/CustomButtonSecondary";
 
 export default function PairFound({setPage}) {
 
@@ -30,6 +31,14 @@ export default function PairFound({setPage}) {
         <View style={Styling.top}>
           <Text style={Styling.heading}>Pairing Manually</Text>
           <Text style={Styling.text}>Select your SLATE from the list below</Text>
+          <CustomButtonSecondary
+            style={{alignSelf: "left"}} 
+            text={"Pair Automatically Instead"}
+            onPress={() => {
+                setPage("Introduction")
+            }}
+            textStyle={{color: "#919191"}}
+          />
         </View>
 
         <ScrollView style={{position: "absolute", bottom: 0, width: "100%", height: "35%", backgroundColor: "#121212", borderTopLeftRadius: 15, borderTopRightRadius: 15, paddingTop: 15}}>
