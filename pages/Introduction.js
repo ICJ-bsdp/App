@@ -2,8 +2,39 @@ import { View, Text, Image } from "react-native";
 import CustomButton from "../components/CustomButton";
 import CustomButtonSecondary from "../components/CustomButtonSecondary";
 import Styling from "../components/Styling";
+import { useEffect } from "react";
 
-export default function Introduction({setPage}) {
+export default function Introduction({setPage, setSelectedDevice, manager}) {
+
+  const scanAndConnect = () => {
+    manager.startDeviceScan(null, null, (error, device) => {
+      if (error) {
+        console.log(error);
+        return
+      }
+
+      if (device && device.name && device.name.includes("SLATE")) {
+        manager.stopDeviceScan();
+        setSelectedDevice(device);
+        setPage("Pair Found");
+      }
+    });
+  }
+
+  useEffect(() => {
+    const subscription = manager.onStateChange((state) => {
+      if (state === "PoweredOn") {
+        scanAndConnect();
+        subscription.remove();
+      }
+    }, true);
+  
+    return () => {
+      subscription.remove();
+    }
+  }, [])
+  
+
   return (
     <View style={Styling.container}>
         <View style={Styling.top}>

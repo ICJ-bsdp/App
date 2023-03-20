@@ -1,38 +1,39 @@
 import { Image, Text, View } from "react-native";
 import Styling from "../components/Styling";
-import { useState } from "react";
 import CustomButton from "../components/CustomButton";
 import CustomButtonSecondary from "../components/CustomButtonSecondary";
+import { useState } from "react";
 
-export default function Connected({setPage}) {
+export default function PairFound({setPage, selectedDevice, setSelectedDevice, manager}) {
 
-  const [name, setName] = useState("Unknown Bluetooth Device");
-  const [batteryPercentage, setBatteryPercentage] = useState("Unknown");
 
     return (
       <View style={Styling.container}>
         <View style={Styling.top}>
-            <Text style={Styling.heading}>{name}</Text> 
+            <Text style={Styling.heading}>{selectedDevice.name}</Text> 
             <View style={{flexDirection: "row", marginTop: 15}}>
                 <Image style={Styling.buttonIcon} source={require("../assets/Images/General/Battery.png")} />
-                <Text style={[Styling.text]}>{batteryPercentage}</Text>
+                <Text style={[Styling.text]}>{"Unknown"}</Text>
             </View>
         </View>
 
         <View style={Styling.bottom}>
             <CustomButton 
-                text={"Connected"} 
-                style={{backgroundColor: "#121212"}}
-                textStyle={{color: "white"}}
+                text={"Pair"} 
+                icon={require("../assets/Images/General/Bluetooth.png")} 
+                onPress={() => {
+                    setPage("Connected")
+                }}
             />
             <CustomButtonSecondary 
-                text={"Remove"}
+                text={"Not My Device"}
                 onPress={() => {
+                    setSelectedDevice(null);
                     setPage("Pair Manually")
                 }}
                 textStyle={{color: "#FF5A5A"}}
             />
         </View>
-      </View>
+    </View>
     );
   }
