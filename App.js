@@ -8,8 +8,6 @@ import Connected from './pages/Connected';
 import { useState } from 'react';
 import { BleManager } from 'react-native-ble-plx';
 
-
-
 export default function App() {
 
   const manager = new BleManager();

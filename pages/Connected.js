@@ -3,7 +3,6 @@ import Styling from "../components/Styling";
 import { useEffect, useState } from "react";
 import CustomButton from "../components/CustomButton";
 import CustomButtonSecondary from "../components/CustomButtonSecondary";
-import Dialog from "react-native-dialog";
 
 import 'react-native-get-random-values';
 import 'node-libs-react-native/globals';
@@ -12,7 +11,7 @@ import LiveAudioStream from 'react-native-live-audio-stream';
 
 export default function Connected({setPage, manager, setSelectedDevice, selectedDevice}) {
 
-    const [voiceDetection, setVoiceDetection] = useState(false);
+    const [lastDetectionList, setLastDetectionList] = useState([]);
 
     LiveAudioStream.init({
       sampleRate: 16000,
@@ -37,19 +36,6 @@ export default function Connected({setPage, manager, setSelectedDevice, selected
       AudioStreamFormat.getWaveFormatPCM(16000, 16, 1)
     );
     const translationRecognizer = new TranslationRecognizer(speechTranslationConfig, audioConfig);
-  
-    translationRecognizer.recognizing = (s, e) => {
-      console.log(`RECOGNIZING: Text=${e.result.text}`);
-      console.log(`RECOGNIZING: Text=${e.result.translations.get("en")}`);
-    };
-  
-    translationRecognizer.startContinuousRecognitionAsync(() => {
-      console.log("Translation recognizer started");
-    }, 
-      (err) => {
-        console.log(err);
-      }
-    );
 
     const [deviceName, setDeviceName] = useState(selectedDevice.name);
     const [textFieldContent, setTextFieldContent] = useState(null);
@@ -89,6 +75,19 @@ export default function Connected({setPage, manager, setSelectedDevice, selected
 
     useEffect(() => {
       writeDataToDevice();
+
+      translationRecognizer.recognizing = (s, e) => {
+        translations = (e.result.translations.get("en"));
+        writeDataToDevice("CLEARALL" + translations, true);
+      };
+
+      translationRecognizer.startContinuousRecognitionAsync(() => {
+        console.log("Translation recognizer started");
+      }, 
+        (err) => {
+          console.log(err);
+        }
+      );
     }, [])
 
     return (
@@ -118,21 +117,24 @@ export default function Connected({setPage, manager, setSelectedDevice, selected
                     writeDataToDevice(textFieldContent);
                 }}
             />
+
             <CustomButton
-                text={"Start Voice Recognition"}
+                text={
+                  "Enable Voice Detection"
+                }
                 onPress={() => {
-                  if (voiceDetection)
-                  {
-                    writeDataToDevice("Voice Off");
                     LiveAudioStream.start(); 
-                  }
-                  else
-                  {
-                    writeDataToDevice("Voice On");
-                    LiveAudioStream.stop();
-                  }
-                  setVoiceDetection(!voiceDetection);
-                }}
+                    writeDataToDevice("On");
+                  }}
+            />
+            <CustomButton
+                text={
+                  "Disable Voice Detection"
+                }
+                onPress={() => {
+                    LiveAudioStream.stop(); 
+                    writeDataToDevice("Off");
+                  }}
             />
         </View>
       </View>

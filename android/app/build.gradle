@@ -93,9 +93,9 @@ android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
-    namespace "com.blechat"
+    namespace "com.exampletsproject"
     defaultConfig {
-        applicationId "com.blechat"
+        applicationId "com.exampletsproject"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

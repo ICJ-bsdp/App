@@ -14,4 +14,8 @@ module.exports = {
       },
     }),
   },
+  resolver: {
+    extraNodeModules: require('node-libs-react-native'),
+    sourceExts: ['jsx', 'js', 'ts', 'tsx', 'cjs', 'json'] //add here
+  },
 };

@@ -7,11 +7,11 @@
 #define TIMEOUT_SECONDS 600
 #define TEXT_TO_LOOK_FOR @"Welcome to React"
 
-@interface BLEChatTests : XCTestCase
+@interface ExampleTSProjectTests : XCTestCase
 
 @end
 
-@implementation BLEChatTests
+@implementation ExampleTSProjectTests
 
 - (BOOL)findSubviewInView:(UIView *)view matching:(BOOL (^)(UIView *view))test
 {
