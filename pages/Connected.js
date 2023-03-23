@@ -29,10 +29,6 @@ export default function Connected({setPage, manager, setSelectedDevice, selected
     const speechTranslationConfig = SpeechTranslationConfig.fromSubscription("6c1f18d17acb4e4d84c4dc228d560c3b", "eastus");
     speechTranslationConfig.speechRecognitionLanguage = "en-US";
     speechTranslationConfig.setProfanity(ProfanityOption.Raw);
-    
-    //set delay to none
-    speechTranslationConfig.setProperty("SpeechServiceConnection_InitialSilenceTimeoutMs", "0");
-    speechTranslationConfig.setProperty("SpeechServiceConnection_EndSilenceTimeoutMs", "0");
 
     speechTranslationConfig.addTargetLanguage("en");
     const audioConfig = AudioConfig.fromStreamInput(
