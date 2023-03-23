@@ -5,10 +5,51 @@ import CustomButton from "../components/CustomButton";
 import CustomButtonSecondary from "../components/CustomButtonSecondary";
 import Dialog from "react-native-dialog";
 
+import 'react-native-get-random-values';
+import 'node-libs-react-native/globals';
+import { AudioConfig, AudioInputStream, AudioStreamFormat, CancellationDetails, CancellationReason, NoMatchDetails, NoMatchReason, ResultReason, SpeechConfig, SpeechRecognizer, SpeechTranslationConfig, TranslationRecognizer } from 'microsoft-cognitiveservices-speech-sdk';
+import LiveAudioStream from 'react-native-live-audio-stream';
+
 export default function Connected({setPage, manager, setSelectedDevice, selectedDevice}) {
 
-    const [showRenameConcern, setShowRenameConcern] = useState(true);
-    const [renameNewName, setRenameNewName] = useState(null);
+    const [voiceDetection, setVoiceDetection] = useState(false);
+
+    LiveAudioStream.init({
+      sampleRate: 16000,
+      bufferSize: 4096,
+      channels: 1,
+      bitsPerChannel: 16,
+      audioSource: 6,
+    });
+  
+    const pushStream = AudioInputStream.createPushStream();
+  
+    LiveAudioStream.on('data', (data) => {
+      const pcmData = Buffer.from(data, 'base64');
+      pushStream.write(pcmData);
+    });
+  
+    const speechTranslationConfig = SpeechTranslationConfig.fromSubscription("6c1f18d17acb4e4d84c4dc228d560c3b", "eastus");
+    speechTranslationConfig.speechRecognitionLanguage = "en-US";
+    speechTranslationConfig.addTargetLanguage("en");
+    const audioConfig = AudioConfig.fromStreamInput(
+      pushStream,
+      AudioStreamFormat.getWaveFormatPCM(16000, 16, 1)
+    );
+    const translationRecognizer = new TranslationRecognizer(speechTranslationConfig, audioConfig);
+  
+    translationRecognizer.recognizing = (s, e) => {
+      console.log(`RECOGNIZING: Text=${e.result.text}`);
+      console.log(`RECOGNIZING: Text=${e.result.translations.get("en")}`);
+    };
+  
+    translationRecognizer.startContinuousRecognitionAsync(() => {
+      console.log("Translation recognizer started");
+    }, 
+      (err) => {
+        console.log(err);
+      }
+    );
 
     const [deviceName, setDeviceName] = useState(selectedDevice.name);
     const [textFieldContent, setTextFieldContent] = useState(null);
@@ -52,27 +93,6 @@ export default function Connected({setPage, manager, setSelectedDevice, selected
 
     return (
       <View style={Styling.container}>
-          <Dialog.Container
-            visible={selectedDevice.name  === "SLATE Glass" && showRenameConcern}
-          >
-        <Dialog.Title>Rename</Dialog.Title>
-        <Dialog.Description>
-          Enter the name of who owns this SLATE Glass. This will make it easier to recognize in the future.
-        </Dialog.Description>
-        <Dialog.Input placeholder={"eg. Kevin"} onChange={(e) => {
-          setRenameNewName(e.nativeEvent.text);
-        }}></Dialog.Input>
-        <Dialog.Button label="Cancel" onPress={() => {
-          setShowRenameConcern(false);
-        }} />
-        <Dialog.Button label="Rename" onPress={() => {
-          writeDataToDevice("CHANGE_NAME " + renameNewName + "'s SLATE Glass", true);
-          writeDataToDevice("Renamed");
-          setDeviceName(renameNewName + "'s SLATE Glass");
-          setShowRenameConcern(false);
-        }} />
-        </Dialog.Container>
-
         <View style={Styling.top}>
             <Text style={Styling.heading}>{deviceName}</Text> 
             <View style={{flexDirection: "row", marginTop: 15}}>
@@ -96,6 +116,22 @@ export default function Connected({setPage, manager, setSelectedDevice, selected
                 text={"Send Custom Message"}
                 onPress={() => {
                     writeDataToDevice(textFieldContent);
+                }}
+            />
+            <CustomButton
+                text={"Start Voice Recognition"}
+                onPress={() => {
+                  if (voiceDetection)
+                  {
+                    writeDataToDevice("Voice Off");
+                    LiveAudioStream.start(); 
+                  }
+                  else
+                  {
+                    writeDataToDevice("Voice On");
+                    LiveAudioStream.stop();
+                  }
+                  setVoiceDetection(!voiceDetection);
                 }}
             />
         </View>
