@@ -6,12 +6,10 @@ import CustomButtonSecondary from "../components/CustomButtonSecondary";
 
 import 'react-native-get-random-values';
 import 'node-libs-react-native/globals';
-import { AudioConfig, AudioInputStream, AudioStreamFormat, CancellationDetails, CancellationReason, NoMatchDetails, NoMatchReason, ResultReason, SpeechConfig, SpeechRecognizer, SpeechTranslationConfig, TranslationRecognizer } from 'microsoft-cognitiveservices-speech-sdk';
+import { AudioConfig, AudioInputStream, AudioStreamFormat, ProfanityOption, CancellationDetails, CancellationReason, NoMatchDetails, NoMatchReason, ResultReason, SpeechConfig, SpeechRecognizer, SpeechTranslationConfig, TranslationRecognizer } from 'microsoft-cognitiveservices-speech-sdk';
 import LiveAudioStream from 'react-native-live-audio-stream';
 
 export default function Connected({setPage, manager, setSelectedDevice, selectedDevice}) {
-
-    const [lastDetectionList, setLastDetectionList] = useState([]);
 
     LiveAudioStream.init({
       sampleRate: 16000,
@@ -30,6 +28,12 @@ export default function Connected({setPage, manager, setSelectedDevice, selected
   
     const speechTranslationConfig = SpeechTranslationConfig.fromSubscription("6c1f18d17acb4e4d84c4dc228d560c3b", "eastus");
     speechTranslationConfig.speechRecognitionLanguage = "en-US";
+    speechTranslationConfig.setProfanity(ProfanityOption.Raw);
+    
+    //set delay to none
+    speechTranslationConfig.setProperty("SpeechServiceConnection_InitialSilenceTimeoutMs", "0");
+    speechTranslationConfig.setProperty("SpeechServiceConnection_EndSilenceTimeoutMs", "0");
+
     speechTranslationConfig.addTargetLanguage("en");
     const audioConfig = AudioConfig.fromStreamInput(
       pushStream,
@@ -45,12 +49,14 @@ export default function Connected({setPage, manager, setSelectedDevice, selected
       if (text != null)
       {
         const Buffer = require("buffer").Buffer;
-        encoded = new Buffer(text).toString("base64");
 
+        let final = text;
         if (command)
         {
-          encoded = "[CMD]" + encoded;
+          final = "CMD_" + text;
         }
+
+        encoded = new Buffer(final).toString("base64");
       }
 
       selectedDevice.isConnected().then((connected) => {
@@ -78,7 +84,7 @@ export default function Connected({setPage, manager, setSelectedDevice, selected
 
       translationRecognizer.recognizing = (s, e) => {
         translations = (e.result.translations.get("en"));
-        writeDataToDevice("CLEARALL" + translations, true);
+        writeDataToDevice("CLEAR" + translations, true);
       };
 
       translationRecognizer.startContinuousRecognitionAsync(() => {
