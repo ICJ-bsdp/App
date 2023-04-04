@@ -8,6 +8,7 @@ import 'react-native-get-random-values';
 import 'node-libs-react-native/globals';
 import { AudioConfig, AudioInputStream, AudioStreamFormat, ProfanityOption, CancellationDetails, CancellationReason, NoMatchDetails, NoMatchReason, ResultReason, SpeechConfig, SpeechRecognizer, SpeechTranslationConfig, TranslationRecognizer } from 'microsoft-cognitiveservices-speech-sdk';
 import LiveAudioStream from 'react-native-live-audio-stream';
+import {key} from "../components/Secrets"
 
 export default function Connected({setPage, manager, setSelectedDevice, selectedDevice}) {
 
@@ -26,7 +27,7 @@ export default function Connected({setPage, manager, setSelectedDevice, selected
       pushStream.write(pcmData);
     });
   
-    const speechTranslationConfig = SpeechTranslationConfig.fromSubscription("6c1f18d17acb4e4d84c4dc228d560c3b", "eastus");
+    const speechTranslationConfig = SpeechTranslationConfig.fromSubscription(key, "eastus");
     speechTranslationConfig.speechRecognitionLanguage = "en-US";
     speechTranslationConfig.setProfanity(ProfanityOption.Raw);
 
