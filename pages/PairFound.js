@@ -28,8 +28,7 @@ export default function PairFound({setPage, selectedDevice, setSelectedDevice, m
             <CustomButtonSecondary 
                 text={"Not My Device"}
                 onPress={() => {
-                    setSelectedDevice(null);
-                    setPage("Pair Manually")
+                    setPage("Pair Manually", () => {setSelectedDevice(null);})
                 }}
                 textStyle={{color: "#FF5A5A"}}
             />

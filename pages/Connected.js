@@ -104,41 +104,48 @@ export default function Connected({setPage, manager, setSelectedDevice, selected
             <CustomButtonSecondary 
                 text={"Remove"}
                 onPress={() => {
-                    selectedDevice.cancelConnection();
-                    setSelectedDevice(null);
-                    setPage("Pair Manually")
+                    setPage("Pair Manually", () => {
+                      selectedDevice.cancelConnection();
+                      setSelectedDevice(null);
+                    })
                 }}
                 textStyle={{color: "#FF5A5A"}}
             />
 
-            <TextInput onChange={(e) => {
-              setTextFieldContent(e.nativeEvent.text);
-            }} style={{padding: 15, marginBottom: 15, marginTop: 15, borderRadius: 15,  height: 200, backgroundColor: "rgba(255, 255, 255, 0.25)"}}/>
-            <CustomButton
-                text={"Send Custom Message"}
-                onPress={() => {
-                    writeDataToDevice(textFieldContent);
-                }}
-            />
+            <View style={{flexDirection: "row", marginTop: 15}}>
+              <TextInput onChange={(e) => {
+                setTextFieldContent(e.nativeEvent.text);
+              }} style={{marginBottom: 15, borderRadius: 15, width: "80%", backgroundColor: "rgba(255, 255, 255, 0.25)"}}/>
+              <CustomButton
+                  text={"➡️"}
+                  style={{marginLeft: 10, height: 50, width: 60}}
+                  textStyle={{marginTop: -7}}
+                  onPress={() => {
+                      writeDataToDevice(textFieldContent);
+                  }}
+              />
+            </View>
 
-            <CustomButton
-                text={
-                  "Enable Voice Detection"
-                }
-                onPress={() => {
-                    LiveAudioStream.start(); 
-                    writeDataToDevice("On");
-                  }}
-            />
-            <CustomButton
-                text={
-                  "Disable Voice Detection"
-                }
-                onPress={() => {
-                    LiveAudioStream.stop(); 
-                    writeDataToDevice("Off");
-                  }}
-            />
+            <View style={{flexDirection: "row", marginTop: 15}}>
+              <CustomButton
+                  text={
+                    "Enable Voice"
+                  }
+                  onPress={() => {
+                      LiveAudioStream.start(); 
+                      writeDataToDevice("On");
+                    }}
+              />
+              <CustomButton
+                  text={
+                    "Disable Voice"
+                  }
+                  onPress={() => {
+                      LiveAudioStream.stop(); 
+                      writeDataToDevice("Off");
+                    }}
+              />
+            </View>
         </View>
       </View>
     );
