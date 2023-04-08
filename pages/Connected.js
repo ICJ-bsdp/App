@@ -9,8 +9,21 @@ import 'node-libs-react-native/globals';
 import { AudioConfig, AudioInputStream, AudioStreamFormat, ProfanityOption, CancellationDetails, CancellationReason, NoMatchDetails, NoMatchReason, ResultReason, SpeechConfig, SpeechRecognizer, SpeechTranslationConfig, TranslationRecognizer } from 'microsoft-cognitiveservices-speech-sdk';
 import LiveAudioStream from 'react-native-live-audio-stream';
 import {key} from "../components/Secrets"
+import { Picker } from "@react-native-picker/picker";
 
 export default function Connected({setPage, manager, setSelectedDevice, selectedDevice}) {
+
+  const languages = [
+    {label: "English", value: "en"},
+    {label: "Spanish", value: "es"},
+    {label: "French", value: "fr"},
+    {label: "German", value: "de"},
+    {label: "Italian", value: "it"},
+    {label: "Japanese", value: "ja"},
+    {label: "Korean", value: "ko"},
+    {label: "Portuguese", value: "pt"},
+    {label: "Russian", value: "ru"},
+  ];
 
     LiveAudioStream.init({
       sampleRate: 16000,
@@ -31,7 +44,15 @@ export default function Connected({setPage, manager, setSelectedDevice, selected
     speechTranslationConfig.speechRecognitionLanguage = "en-US";
     speechTranslationConfig.setProfanity(ProfanityOption.Raw);
 
-    speechTranslationConfig.addTargetLanguage("en");
+    const [selectedLanguage, setSelectedLanguage] = useState("es");
+
+    console.log(selectedLanguage);
+
+    for (var language of languages)
+    {
+      speechTranslationConfig.addTargetLanguage(language.value);
+    }
+
     const audioConfig = AudioConfig.fromStreamInput(
       pushStream,
       AudioStreamFormat.getWaveFormatPCM(16000, 16, 1)
@@ -76,12 +97,17 @@ export default function Connected({setPage, manager, setSelectedDevice, selected
       );
     }
 
-    useEffect(() => {
       writeDataToDevice();
 
       translationRecognizer.recognizing = (s, e) => {
-        translations = (e.result.translations.get("en"));
-        writeDataToDevice("CLEAR" + translations, true);
+        try {
+          translations = (e.result.translations.get(selectedLanguage));
+          console.log(selectedLanguage);
+          console.log(translations);
+          writeDataToDevice("CLEAR" + translations, true);
+        } catch (e) {
+          console.log(e);
+        }
       };
 
       translationRecognizer.startContinuousRecognitionAsync(() => {
@@ -91,7 +117,6 @@ export default function Connected({setPage, manager, setSelectedDevice, selected
           console.log(err);
         }
       );
-    }, [])
 
     return (
       <View style={Styling.container}>
@@ -101,6 +126,22 @@ export default function Connected({setPage, manager, setSelectedDevice, selected
                 <Image style={Styling.buttonIcon} source={require("../assets/Images/General/Battery.png")} />
                 <Text style={[Styling.text]}>{"Unknown"}</Text>
             </View>
+
+            <Picker
+              style={{height: 50, width: 150, marginTop: 15, backgroundColor: "white"}}
+              selectedValue={selectedLanguage}
+              onValueChange={(itemValue, itemIndex) => {
+                setSelectedLanguage(itemValue)
+                speechTranslationConfig.speechRecognitionLanguage = itemValue;
+                // writeDataToDevice(languages[itemIndex].label);
+              }}>
+              {
+                languages.map((language) => {
+                  return <Picker.Item label={language.label} value={language.value} />
+                })
+              }
+            </Picker>
+
             <CustomButtonSecondary 
                 text={"Remove"}
                 onPress={() => {
