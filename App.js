@@ -22,7 +22,7 @@ export default function App() {
   const fadeIn = () => {
     Animated.timing(fadeAnimation, {
       toValue: 1,
-      duration: 100,
+      duration: 500,
       useNativeDriver: true
     }).start();
   };
@@ -30,7 +30,7 @@ export default function App() {
   const fadeOut = () => {
     Animated.timing(fadeAnimation, {
       toValue: 0,
-      duration: 100,
+      duration: 500,
       useNativeDriver: true
     }).start();
   };
@@ -41,7 +41,7 @@ export default function App() {
       setPage(page)
       onChange();
       fadeIn();
-    }, 100);
+    }, 500);
   };
 
   useEffect(() => {

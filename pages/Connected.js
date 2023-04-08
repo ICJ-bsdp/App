@@ -6,9 +6,12 @@ import CustomButtonSecondary from "../components/CustomButtonSecondary";
 
 import 'react-native-get-random-values';
 import 'node-libs-react-native/globals';
-import { AudioConfig, AudioInputStream, AudioStreamFormat, ProfanityOption, CancellationDetails, CancellationReason, NoMatchDetails, NoMatchReason, ResultReason, SpeechConfig, SpeechRecognizer, SpeechTranslationConfig, TranslationRecognizer } from 'microsoft-cognitiveservices-speech-sdk';
+import { AudioConfig, AudioInputStream, AudioStreamFormat, ProfanityOption, CancellationDetails, CancellationReason, NoMatchDetails, NoMatchReason, ResultReason, SpeechConfig, SpeechRecognizer, SpeechTranslationConfig, TranslationRecognizer, AutoDetectSourceLanguageConfig, AutoDetectSourceLanguageResult } from 'microsoft-cognitiveservices-speech-sdk';
 import LiveAudioStream from 'react-native-live-audio-stream';
 import {key} from "../components/Secrets"
+
+import { LogBox } from 'react-native';
+LogBox.ignoreLogs(['new NativeEventEmitter']); // Ignore log notification by message
 
 export default function Connected({setPage, manager, setSelectedDevice, selectedDevice}) {
 
@@ -26,17 +29,18 @@ export default function Connected({setPage, manager, setSelectedDevice, selected
       const pcmData = Buffer.from(data, 'base64');
       pushStream.write(pcmData);
     });
-  
-    const speechTranslationConfig = SpeechTranslationConfig.fromSubscription(key, "eastus");
+
+    var autoDetectSourceLanguageConfig = AutoDetectSourceLanguageConfig.fromLanguages(["en-US", "de-DE"]);
+    const speechTranslationConfig = SpeechConfig.fromSubscription(key, "eastus");
     speechTranslationConfig.speechRecognitionLanguage = "en-US";
     speechTranslationConfig.setProfanity(ProfanityOption.Raw);
 
-    speechTranslationConfig.addTargetLanguage("en");
+    // speechTranslationConfig.addTargetLanguage("en");
     const audioConfig = AudioConfig.fromStreamInput(
       pushStream,
       AudioStreamFormat.getWaveFormatPCM(16000, 16, 1)
     );
-    const translationRecognizer = new TranslationRecognizer(speechTranslationConfig, audioConfig);
+    const translationRecognizer = new SpeechRecognizer.FromConfig(speechTranslationConfig, autoDetectSourceLanguageConfig, audioConfig);
 
     const [deviceName, setDeviceName] = useState(selectedDevice.name);
     const [textFieldContent, setTextFieldContent] = useState(null);
@@ -80,15 +84,22 @@ export default function Connected({setPage, manager, setSelectedDevice, selected
       writeDataToDevice();
 
       translationRecognizer.recognizing = (s, e) => {
-        translations = (e.result.translations.get("en"));
-        writeDataToDevice("CLEAR" + translations, true);
+        // translations = (e.result.translations.get("en"));
+        // console.log(e.result.text);
+        // writeDataToDevice("CLEAR" + translations, true);
+        writeDataToDevice("CLEAR" + e.result.text, true);
+        try {
+          var c = AutoDetectSourceLanguageResult.fromResult(e.result)
+          console.log("language: " + c.language);
+        } catch (error) {
+          console.log(error);
+        }
       };
 
       translationRecognizer.startContinuousRecognitionAsync(() => {
         console.log("Translation recognizer started");
       }, 
-        (err) => {
-          console.log(err);
+        (err) => {          console.log(err);
         }
       );
     }, [])
