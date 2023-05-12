@@ -11,7 +11,9 @@ import LiveAudioStream from 'react-native-live-audio-stream';
 import {key} from "../components/Secrets"
 import { Picker } from "@react-native-picker/picker";
 
-export default function Connected({setPage, manager, setSelectedDevice, selectedDevice}) {
+// import {Restart} from 'fiction-expo-restart';
+
+export default function Connected({setPage, manager, setSelectedDevice, selectedDevice, setOutputLanguage, outputLanguage, inputLanguage, setInputLanguage}) {
 
   const languages = [
     {label: "English", value: "en"},
@@ -24,6 +26,13 @@ export default function Connected({setPage, manager, setSelectedDevice, selected
     {label: "Portuguese", value: "pt"},
     {label: "Russian", value: "ru"},
   ];
+
+  const inputLanguages = [
+    {label: "English", value: "en-US"},
+    {label: "Spanish", value: "es-ES"},
+    {label: "French", value: "fr-FR"},
+    {label: "German", value: "de-DE"},
+  ]
 
     LiveAudioStream.init({
       sampleRate: 16000,
@@ -41,12 +50,10 @@ export default function Connected({setPage, manager, setSelectedDevice, selected
     });
   
     const speechTranslationConfig = SpeechTranslationConfig.fromSubscription(key, "eastus");
-    speechTranslationConfig.speechRecognitionLanguage = "en-US";
+    speechTranslationConfig.speechRecognitionLanguage = inputLanguage;
     speechTranslationConfig.setProfanity(ProfanityOption.Raw);
 
-    const [selectedLanguage, setSelectedLanguage] = useState("es");
-
-    console.log(selectedLanguage);
+    console.log(outputLanguage);
 
     for (var language of languages)
     {
@@ -101,9 +108,7 @@ export default function Connected({setPage, manager, setSelectedDevice, selected
 
       translationRecognizer.recognizing = (s, e) => {
         try {
-          translations = (e.result.translations.get(selectedLanguage));
-          console.log(selectedLanguage);
-          console.log(translations);
+          translations = (e.result.translations.get(outputLanguage));
           writeDataToDevice("CLEAR" + translations, true);
         } catch (e) {
           console.log(e);
@@ -118,6 +123,16 @@ export default function Connected({setPage, manager, setSelectedDevice, selected
         }
       );
 
+    const turnOnVoice = () => {
+        LiveAudioStream.start(); 
+        writeDataToDevice("On");
+    }
+
+    const turnOffVoice = () => {
+        LiveAudioStream.stop(); 
+        writeDataToDevice("Off");
+    }
+
     return (
       <View style={Styling.container}>
         <View style={Styling.top}>
@@ -127,13 +142,34 @@ export default function Connected({setPage, manager, setSelectedDevice, selected
                 <Text style={[Styling.text]}>{"Unknown"}</Text>
             </View>
 
+            <Text style={{color: "#fff", fontSize: 20, marginTop: 15}}>Input Language</Text>
             <Picker
               style={{height: 50, width: 150, marginTop: 15, backgroundColor: "white"}}
-              selectedValue={selectedLanguage}
+              selectedValue={inputLanguage}
               onValueChange={(itemValue, itemIndex) => {
-                setSelectedLanguage(itemValue)
-                speechTranslationConfig.speechRecognitionLanguage = itemValue;
-                // writeDataToDevice(languages[itemIndex].label);
+                turnOffVoice();
+                setTimeout(() => {
+                  setInputLanguage(itemValue);
+                  setPage("Connected")
+                }, 500);
+              }}>
+              {
+                inputLanguages.map((language) => {
+                  return <Picker.Item label={language.label} value={language.value} />
+                })
+              }
+            </Picker>
+
+            <Text style={{color: "#fff", fontSize: 20, marginTop: 15}}>Output Language</Text>
+            <Picker
+              style={{height: 50, width: 150, marginTop: 15, backgroundColor: "white"}}
+              selectedValue={outputLanguage}
+              onValueChange={(itemValue, itemIndex) => {
+                turnOffVoice();
+                setTimeout(() => {
+                  setOutputLanguage(itemValue);
+                  setPage("Connected")
+                }, 500);
               }}>
               {
                 languages.map((language) => {
@@ -146,8 +182,13 @@ export default function Connected({setPage, manager, setSelectedDevice, selected
                 text={"Remove"}
                 onPress={() => {
                     setPage("Pair Manually", () => {
-                      selectedDevice.cancelConnection();
-                      setSelectedDevice(null);
+                      turnOffVoice();
+                      setTimeout(() => {
+                        // //cancel
+                        // manager.cancelDeviceConnection(selectedDevice.id);
+                        // setSelectedDevice(null);
+                        // Restart();
+                      }, 500);
                     })
                 }}
                 textStyle={{color: "#FF5A5A"}}
@@ -172,19 +213,13 @@ export default function Connected({setPage, manager, setSelectedDevice, selected
                   text={
                     "Enable Voice"
                   }
-                  onPress={() => {
-                      LiveAudioStream.start(); 
-                      writeDataToDevice("On");
-                    }}
+                  onPress={turnOnVoice}
               />
               <CustomButton
                   text={
                     "Disable Voice"
                   }
-                  onPress={() => {
-                      LiveAudioStream.stop(); 
-                      writeDataToDevice("Off");
-                    }}
+                  onPress={turnOffVoice}
               />
             </View>
         </View>

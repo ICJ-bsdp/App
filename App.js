@@ -17,12 +17,15 @@ export default function App() {
   const [page, setPage] = useState("Introduction");
   const [selectedDevice, setSelectedDevice] = useState(null);
 
+  const [inputLanguage, setInputLanguage] = useState("en-US");
+  const [outputLanguage, setOutputLanguage] = useState("en");
+
   const fadeAnimation = useRef(new Animated.Value(0)).current;
 
   const fadeIn = () => {
     Animated.timing(fadeAnimation, {
       toValue: 1,
-      duration: 500,
+      duration: 200,
       useNativeDriver: true
     }).start();
   };
@@ -30,7 +33,7 @@ export default function App() {
   const fadeOut = () => {
     Animated.timing(fadeAnimation, {
       toValue: 0,
-      duration: 500,
+      duration: 200,
       useNativeDriver: true
     }).start();
   };
@@ -41,7 +44,7 @@ export default function App() {
       setPage(page)
       onChange();
       fadeIn();
-    }, 500);
+    }, 200);
   };
 
   useEffect(() => {
@@ -54,7 +57,7 @@ export default function App() {
         {page == "Introduction" && <Introduction setPage={fadeBetween} manager={manager} setSelectedDevice={setSelectedDevice}/>}
         {page == "Pair Found" && <PairFound setPage={fadeBetween} manager={manager} selectedDevice={selectedDevice} setSelectedDevice={setSelectedDevice}/>}
         {page == "Pair Manually" && <PairManually setPage={fadeBetween} manager={manager} setSelectedDevice={setSelectedDevice}/>}
-        {page == "Connected" && <Connected setPage={fadeBetween} manager={manager} selectedDevice={selectedDevice} setSelectedDevice={setSelectedDevice}/>}
+        {page == "Connected" && <Connected setPage={fadeBetween} manager={manager} selectedDevice={selectedDevice} setSelectedDevice={setSelectedDevice} setOutputLanguage={setOutputLanguage} outputLanguage={outputLanguage} inputLanguage={inputLanguage} setInputLanguage={setInputLanguage}/>}
       </Animated.View>
     </View>
   );
